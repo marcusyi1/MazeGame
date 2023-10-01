@@ -1,0 +1,379 @@
+import java.util.function.Predicate;
+import tester.Tester;
+
+// represents the abstract class ANode
+abstract class ANode<T> { 
+  ANode<T> next;
+  ANode<T> prev;
+
+  // helps the size method
+  abstract int sizeHelp();
+
+  // helps the remove method
+  abstract T removeHelp();
+
+  // helps the find method
+  abstract ANode<T> findHelp(Predicate<T> pred);
+
+}
+
+// represents the Node class
+class Node<T> extends ANode<T> {
+  T data;
+
+  Node(T data, ANode<T> next,  ANode<T> prev) {
+    this.data = data;
+    this.next = next;
+    this.prev = prev;
+    if (this.next == null)  {
+      throw new IllegalArgumentException("Cannot have a null next node");
+    }
+    if (this.prev == null) {
+      throw new IllegalArgumentException("Cannot have a null prev node");
+    }
+    else {
+      next.prev = this;
+      prev.next = this;
+    }
+  }
+
+  Node(T data) {
+    this.data = data;
+    this.next = null;
+    this.prev = null;
+  }
+
+  // helps the size method 
+  int sizeHelp() {
+    return 1 + this.next.sizeHelp();
+  }
+
+  // helps the remove method
+  T removeHelp() {
+    prev.next = this.next;
+    next.prev = this.prev;
+    return this.data;
+  }
+
+  // helps the find method
+  ANode<T> findHelp(Predicate<T> pred) {
+    if (pred.test(this.data)) {
+      return this;
+    }
+    return this.next.findHelp(pred);
+  }
+
+}
+
+// represents the Sentinel class
+class Sentinel<T> extends ANode<T> {
+  Sentinel() {
+    this.next = this;
+    this.prev = this;
+  }
+
+  // determines the size of a Sentinel
+  int size() {
+    return this.next.sizeHelp();
+  }
+
+  // helps the size method
+  int sizeHelp() {
+    return 0;
+  }
+
+  // EFFECT : adds to the front/head of Sentinel
+  void addAtHead(T value) {
+    new Node<T>(value, this.next, this);
+  }
+
+  // EFFECT : adds to the end/tail of Sentinel
+  void addAtTail(T value) {
+    new Node<T>(value, this, this.prev);
+  }
+
+  // returns the removed head T
+  T removeFromHead() {
+    return this.next.removeHelp();
+  }
+
+  // returns the removed tail T
+  T removeFromTail() {
+    return this.prev.removeHelp();
+  }
+
+  // helps remove method
+  T removeHelp() {
+    throw new RuntimeException("Can't remove from empty sentinel");
+  }
+
+  // finds the ANode<T> with given predicate
+  ANode<T> find(Predicate<T> pred) {
+    return this.next.findHelp(pred);
+  }
+
+  // helps find
+  ANode<T> findHelp(Predicate<T> pred) {
+    return this;
+  }
+}
+
+// represents a class of deque
+class Deque<T> {
+  Sentinel<T> header;
+
+  Deque(Sentinel<T> header) {
+    this.header = header;
+  }
+
+  Deque() {
+    this.header = new Sentinel<T>();
+  }
+
+  // determines the size of a deque
+  int size() {
+    return this.header.size();
+  }
+
+  // EFFECT : adds given value to header
+  // at the front/head
+  void addAtHead(T value) {
+    this.header.addAtHead(value);
+  }
+
+  // EFFECT : adds given value to header
+  //at the end/tail
+  void addAtTail(T value) {
+    this.header.addAtTail(value);
+  }
+
+  // returns T from head of header
+  T removeFromHead() {
+    return this.header.removeFromHead();
+  }
+
+  // returns T from tail of header
+  T removeFromTail() {
+    return this.header.removeFromTail();
+  }
+
+  // finds the ANode from given predicate
+  ANode<T> find(Predicate<T> pred) {
+    return this.header.find(pred);
+  }
+}
+
+// represents StringData class
+class StringData implements Predicate<String> {
+  String data;
+
+  StringData(String data) {
+  }
+
+  // determines if Strings equal
+  public boolean test(String t) {
+    return this.equals(t);
+  }
+}
+
+// represents IntegerData class
+class IntegerData implements Predicate<Integer> {
+  Integer data;
+
+  IntegerData(Integer data) {
+  }
+
+  // determines if Integers equal
+  public boolean test(Integer t) {
+    return data == t;
+  }
+}
+
+// represents the examples of deque
+class ExamplesDeque {
+  Deque<String> deque1;
+  Deque<String> deque2;
+  Deque<String> deque3;
+  Deque<Integer> dequeInt;
+  Deque<Integer> dequeIntEmpty;
+  Sentinel<String> sentinelEmpty;
+  Sentinel<String> sentinel;
+  Sentinel<String> sentinel1;
+  Node<String> nodeABC;
+  Node<String> nodeBCD;
+  Node<String> nodeCDE;
+  Node<String> nodeDEF;
+  Node<String> nodeABC1;
+  Node<String> nodeBCD1;
+  Node<String> nodeCDE1;
+  Node<String> nodeDEF1;
+  Sentinel<Integer> sentinelInt;
+  Sentinel<Integer> sentinelIntEmpty;
+  Node<Integer> node12;
+  Node<Integer> node23;
+  Node<Integer> node34;
+
+  // EFFECT : initializes the deque's  
+  void initDeque() {
+
+    sentinelEmpty = new Sentinel<String>();
+    sentinel = new Sentinel<String>();
+    sentinel1 = new Sentinel<String>();
+    nodeABC = new Node<String>("abc", sentinel, sentinel);
+    nodeBCD = new Node<String>("bcd", sentinel, nodeABC);
+    nodeCDE = new Node<String>("cde", sentinel, nodeBCD);
+    nodeDEF = new Node<String>("def", sentinel, nodeCDE);
+    nodeDEF1 = new Node<String>("def", sentinel1, sentinel1);
+    nodeBCD1 = new Node<String>("bcd", sentinel1, nodeDEF1);
+    nodeABC1 = new Node<String>("abc", sentinel1, nodeBCD1);
+    nodeCDE1 = new Node<String>("cde", sentinel1, nodeABC1);
+    sentinelIntEmpty = new Sentinel<Integer>();
+    sentinelInt = new Sentinel<Integer>();
+    node12 = new Node<Integer>(12, this.sentinelInt, this.sentinelInt);
+    node23 = new Node<Integer>(23, this.sentinelInt, this.node12);
+    node34 = new Node<Integer>(34, this.sentinelInt, this.node23);
+    deque1 = new Deque<String>();
+    deque2 = new Deque<String>(this.sentinel);
+    deque3 = new Deque<String>(this.sentinel1);
+    dequeInt = new Deque<Integer>(this.sentinelInt);
+    dequeIntEmpty = new Deque<Integer>(this.sentinelIntEmpty);
+  }
+
+  // test the initDesque to make sure things equal
+  void testInitDesque(Tester t) {
+    initDeque();
+    t.checkExpect(this.sentinel.prev, this.nodeDEF);
+    t.checkExpect(this.nodeABC.prev, this.sentinel);
+    t.checkExpect(this.nodeBCD.next, this.nodeCDE);
+    t.checkExpect(this.deque2.header, this.sentinel);
+    t.checkExpect(this.sentinelEmpty.prev, this.sentinelEmpty);
+    t.checkExpect(this.sentinelEmpty.next, this.sentinelEmpty);
+    t.checkExpect(this.sentinel.next, this.nodeABC);
+    t.checkExpect(this.nodeABC == null, false);
+    t.checkExpect(this.nodeBCD == null, false);
+    t.checkExpect(this.nodeCDE == null, false);
+    t.checkExpect(this.nodeDEF == null, false);
+  }
+
+  // tests the method size()
+  void testSize(Tester t) {
+    initDeque();
+
+    t.checkExpect(this.deque1.size(), 0);
+    t.checkExpect(this.sentinelEmpty.size(), 0);
+    t.checkExpect(this.sentinel.size(), 4);
+    t.checkExpect(this.deque2.size(), 4);
+  }
+
+  // tests the method addAtHead()
+  void testAddAtHead(Tester t) {
+    initDeque();
+    this.deque1.addAtHead("def");
+    this.deque1.addAtHead("cde");
+    this.deque1.addAtHead("bcd");
+    this.deque1.addAtHead("abc");
+    //tests the lexicographical
+    t.checkExpect(deque1, deque2);
+
+    // re-initializes
+    initDeque();
+    this.deque1.addAtHead("cde");
+    this.deque1.addAtHead("abc");
+    this.deque1.addAtHead("bcd");
+    this.deque1.addAtHead("def");
+    //tests the non-lexicographical example
+    t.checkExpect(deque1, deque3);
+
+    this.dequeIntEmpty.addAtHead(34);
+    this.dequeIntEmpty.addAtHead(23);
+    this.dequeIntEmpty.addAtHead(12);
+    // tests with Integers
+    t.checkExpect(dequeIntEmpty, dequeInt);
+  }
+
+  // tests the method addAtHead()
+  void testAddAtTail(Tester t) {
+    initDeque();
+    this.deque1.addAtTail("abc");
+    this.deque1.addAtTail("bcd");
+    this.deque1.addAtTail("cde");
+    this.deque1.addAtTail("def");
+    //tests the lexicographical
+    t.checkExpect(deque1, deque2);
+
+    // re-initializes
+    initDeque();
+    this.deque1.addAtTail("def");
+    this.deque1.addAtTail("bcd");
+    this.deque1.addAtTail("abc");
+    this.deque1.addAtTail("cde");
+    //tests the non-lexicographical example
+    t.checkExpect(deque1, deque3);
+
+    this.sentinelIntEmpty.addAtTail(12);
+    this.sentinelIntEmpty.addAtTail(23);
+    this.sentinelIntEmpty.addAtTail(34);
+    // tests with Integers
+    t.checkExpect(sentinelIntEmpty, sentinelInt);
+
+  }
+
+  // tests the method removeFromHead
+  void testRemoveFromHead(Tester t) {
+    initDeque();
+
+    t.checkExpect(this.deque2.removeFromHead(), "abc");
+    t.checkExpect(this.deque2.removeFromHead(), "bcd");
+    t.checkExpect(this.deque2.removeFromHead(), "cde");
+    t.checkExpect(this.deque2.removeFromHead(), "def");
+    t.checkExpect(this.dequeInt.removeFromHead(), 12);
+    t.checkExpect(this.dequeInt.removeFromHead(), 23);
+    t.checkExpect(this.dequeInt.removeFromHead(), 34);
+  }
+
+  // tests the runtime exceptions
+  void testRuntimeException(Tester t) {
+    initDeque();
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        sentinelEmpty, "removeFromHead");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        sentinelEmpty, "removeFromTail");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        sentinelIntEmpty, "removeFromHead");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        sentinelIntEmpty, "removeFromTail");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        deque1, "removeFromHead");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        deque1, "removeFromTail");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        dequeIntEmpty, "removeFromHead");
+    t.checkException(new RuntimeException("Can't remove from empty sentinel"), 
+        dequeIntEmpty, "removeFromTail");
+  }
+
+  // tests the method removeFromHead
+  void testRemoveFromTail(Tester t) {
+    initDeque();
+    t.checkExpect(this.deque2.removeFromTail(), "def");
+    t.checkExpect(this.deque2.removeFromTail(), "cde");
+    t.checkExpect(this.deque2.removeFromTail(), "bcd");
+    t.checkExpect(this.deque2.removeFromTail(), "abc");
+    t.checkExpect(this.dequeInt.removeFromTail(), 34);
+    t.checkExpect(this.dequeInt.removeFromTail(), 23);
+    t.checkExpect(this.dequeInt.removeFromTail(), 12);
+  }
+
+  //tests the method find
+  void testFind(Tester t) {
+    initDeque();
+    t.checkExpect(deque2.find(new StringData("abc")), sentinel);
+    t.checkExpect(deque2.find(new StringData("bcd")), sentinel);
+    t.checkExpect(deque2.find(new StringData("cbd")), sentinel);
+    t.checkExpect(deque2.find(new StringData("def")), sentinel);
+    t.checkExpect(dequeInt.find(new IntegerData(12)), sentinelInt);
+    t.checkExpect(dequeInt.find(new IntegerData(23)), sentinelInt);
+    t.checkExpect(dequeInt.find(new IntegerData(34)), sentinelInt);
+  }
+}
+
